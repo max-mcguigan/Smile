@@ -18,4 +18,9 @@ def contact():
     return render_template("contact.html")
 
 
+@app.route('/login')
+def login():
+    return render_template("login.html")
+
+
 app.run(host='0.0.0.0')
