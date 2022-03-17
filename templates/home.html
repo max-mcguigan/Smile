@@ -1,35 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Smile | Home</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalise/8.0.1/normalise.css"/>
-    <link href="{{ url_for('static', filename='smile.css') }}" rel="stylesheet">
-</head>
-
-<body>
-<div class="container">
-    <header>
-        <h1>smile</h1>
-        <h2>home</h2>
-    </header>
-    <nav>
-        <a href="/">home</a> &#8226;
-        <a href="/menu">menu</a> &#8226;
-        <a href="/contact">contact</a> &#8226;
-        <a href="/login">login</a> &#8226;
-    </nav>
-    <main>
-        <img src="https://c.tenor.com/BPlEzXUB0uIAAAAC/free-smiley-faces-de-emoji.gif" alt="smiley face">
-        <img src="https://c.tenor.com/o_8A22_wH5IAAAAC/balling-basketballs.gif" alt="balling hard">
-        <img src="https://c.tenor.com/PsrCLJBHO6kAAAAC/free-smiley-faces-de-smiley.gif" alt="funny smiley">
-    </main>
-</div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="js/script.js"></script>
-</body>
-
-</html>
+{% block pageheading %}home{%endblock%}
+{% block main %}
+<p><em>straw</em></p>
+{% endblock %}
