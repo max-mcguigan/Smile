@@ -20,8 +20,11 @@
         <a href="/">home</a> &#8226;
         <a href="/menu">menu</a> &#8226;
         <a href="/contact">contact</a> &#8226;
-        <a href="/login">login</a> &#8226;
-        <a href="/logout">logout</a> &#8226;
+        {% if logged_in %}
+            <a href="/logout">logout</a>
+        {% else %}
+            <a href="/login">login</a>
+        {% endif %}
     </nav>
     <main>
         {% block main %}
