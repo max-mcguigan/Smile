@@ -20,7 +20,7 @@ def create_connection(db_file):
 
 @app.route('/')
 def home():
-    return render_template("home.html")
+    return render_template("home.html", logged_in=is_logged_in())
 
 
 @app.route('/menu')
@@ -31,16 +31,18 @@ def menu():
     cur.execute(query)
     product_list = cur.fetchall()
     con.close()
-    return render_template("menu.html", products=product_list)
+    return render_template("menu.html", products=product_list, logged_in=is_logged_in())
 
 
 @app.route('/contact')
 def contact():
-    return render_template("contact.html")
+    return render_template("contact.html", logged_in=is_logged_in())
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if is_logged_in():
+        return redirect('/')
     if request.method == "POST":
         email = request.form['email'].strip()
         password = request.form['password'].strip()
@@ -66,11 +68,14 @@ def login():
         session['userid'] = userid
         session['firstname'] = firstname
         print(session)
+        return redirect('/')
     return render_template("login.html")
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if is_logged_in():
+        return redirect('/')
     if request.method == "POST":
         print(request.form)
         fname = request.form.get("fname").strip().title()
@@ -93,11 +98,13 @@ def signup():
         con.close()
         return redirect('/login')
 
-    return render_template("signup.html")
+    return render_template("signup.html", logged_in=is_logged_in())
 
 
 @app.route('/logout')
 def logout():
+    if not is_logged_in():
+        redirect('/')
     print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
