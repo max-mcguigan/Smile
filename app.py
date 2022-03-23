@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, session, redirect
 import sqlite3
 from sqlite3 import Error
+from flask_bcrypt import Bcrypt
 
 DB_NAME = 'smile.db'
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 app.secret_key = "hj32g4yds87dywqhej23e42378ry32890ey12983yw1h3h12iu3h21381293"
 
 
@@ -61,8 +63,8 @@ def login():
         except IndexError:
             return redirect('/login?error=email+invalid+or+password+incorrect')
 
-        if db_password != password:
-            return redirect('/login?error=email+invalid+or+password+incorrect')
+        if not bcrypt.check_password_hash(db_password, password):
+            return redirect(request.referrer + "?error=email+invalid+or+password+incorrect")
 
         session['email'] = email
         session['userid'] = userid
@@ -87,11 +89,12 @@ def signup():
         if password != password2:
             return redirect('/signup?error=Passwords+dont+match')
 
+        hashed_password = bcrypt.generate_password_hash(password)
         con = create_connection(DB_NAME)
         query = "INSERT INTO customer(id, fname, lname, email, password) VALUES(NULL,?,?,?,?)"
         cur = con.cursor()
         try:
-            cur.execute(query, (fname, lname, email, password))
+            cur.execute(query, (fname, lname, email, hashed_password))
         except sqlite3.IntegrityError:
             return redirect('/signup?error=email+is+already+used')
         con.commit()
