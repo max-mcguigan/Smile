@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect
 import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 
 DB_NAME = 'smile.db'
 
@@ -28,7 +29,7 @@ def home():
 @app.route('/menu')
 def menu():
     con = create_connection(DB_NAME)
-    query = "SELECT name, description, volume, price, image FROM product"
+    query = "SELECT name, description, volume, price, image, id FROM product"
     cur = con.cursor()
     cur.execute(query)
     product_list = cur.fetchall()
@@ -114,12 +115,25 @@ def logout():
     return redirect('/?message=see+you+next+time')
 
 
+@app.route('/addtocart/<productid>')
+def addtocart(productid):
+    userid = session['userid']
+    timestamp = datetime.now()
+    print("USer {} would like to add {} to cart".format(userid, productid))
+
+    query = "INSERT into cart(id, userid, productid, timestamp) VALUES (NULL,?,?,?)"
+    con = create_connection(DB_NAME)
+    cur = con.cursor()
+    cur.execute(query, (userid, productid, timestamp))
+    con.commit()
+    con.close()
+    return redirect(request.referrer)
+
+
 def is_logged_in():
     if session.get("email") is None:
-        print("not logged in")
         return False
     else:
-        print("logged in")
         return True
 
 

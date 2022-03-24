@@ -4,11 +4,20 @@
 {% block main %}
 {% for product in products %}
 <div class="product-box">
+    <div class="product-box-heading">
     <h3>{{ product[0] }}</h3>
     <p>{{ product[1]}}</p>
+    </div>
+    <div class="product-box-image">
+    <img src="static/images/{{ product[4] }}.jpg" alt="product_image">
+    </div>
+    <div class="product-box-info">
     <p><strong>Volume: </strong>{{ product[2] }}</p>
     <p><strong>Price: </strong>${{ product[3] }}</p>
-    <img src="static/images/{{ product[4] }}.jpg">
+    </div>
+    {% if logged_in %}
+    <a href="/addtocart/{{ product[5] }}">Add to cart</a>
+    {% endif %}
 </div>
 {% endfor %}
 {% endblock %}
