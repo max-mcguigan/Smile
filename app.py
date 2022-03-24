@@ -211,12 +211,19 @@ def confirm_order():
     return redirect('/checkout')
 
 
-@app.route('/checkout')
+@app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     if not is_logged_in():
         return redirect('/')
+    if request.method == "POST":
+        return redirect('/scammed')
     
     return render_template('checkout.html')
+
+
+@app.route('/scammed')
+def scammed():
+    return render_template('scammed.html')
 
 
 def is_logged_in():
