@@ -14,6 +14,7 @@ app.secret_key = "hj32g4yds87dywqhej23e42378ry32890ey12983yw1h3h12iu3h21381293"
 def create_connection(db_file):
     try:
         connection = sqlite3.connect(db_file)
+        # connection.execute('pragma foreign keys=ON')
         return connection
     except Error as e:
         print(e)
@@ -117,17 +118,105 @@ def logout():
 
 @app.route('/addtocart/<productid>')
 def addtocart(productid):
+    if not is_logged_in():
+        return redirect('/')
+
+    try:
+        productid = int(productid)
+    except ValueError:
+        return redirect(request.referrer + "?error=invalid+product+id")
+
     userid = session['userid']
     timestamp = datetime.now()
     print("USer {} would like to add {} to cart".format(userid, productid))
 
-    query = "INSERT into cart(id, userid, productid, timestamp) VALUES (NULL,?,?,?)"
+    query = "INSERT into cart(id, userid, productid, timestamp) VALUES (NULL,?,?,?);"
     con = create_connection(DB_NAME)
     cur = con.cursor()
-    cur.execute(query, (userid, productid, timestamp))
+    try:
+        cur.execute(query, (userid, productid, timestamp))
+    except sqlite3.IntegrityError as e:
+        print(e)
+        print("### PROBLEM INSERTING INTO DATABASE - FOREIGN KEY ###")
+        con.close()
+        return redirect(request.referrer + "?error=something+went+wrong")
     con.commit()
     con.close()
     return redirect(request.referrer)
+
+
+@app.route('/cart')
+def cart():
+    if not is_logged_in():
+        return redirect('/')
+
+    userid = session['userid']
+    query = "SELECT productid FROM cart WHERE userid=?;"
+    con = create_connection(DB_NAME)
+    cur = con.cursor()
+    cur.execute(query, (userid,))
+    product_ids = cur.fetchall()
+
+    if len(product_ids) == 0:
+        return redirect('menu?error=cart+empty')
+
+    for i in range(len(product_ids)):
+        product_ids[i] = product_ids[i][0]
+    unique_product_ids = list(set(product_ids))
+    for i in range(len(unique_product_ids)):
+        product_count = product_ids.count(unique_product_ids[i])
+        unique_product_ids[i] = [unique_product_ids[i], product_count]
+
+    query = "SELECT name, price FROM product WHERE id = ?;"
+    for item in unique_product_ids:
+        cur.execute(query, (item[0],))
+        item_details = cur.fetchall()
+        print(item_details)
+        item.append(item_details[0][0])
+        item.append(item_details[0][1])
+
+    con.close()
+    print(unique_product_ids)
+
+    return render_template('cart.html', cart_data=unique_product_ids, logged_in=is_logged_in())
+
+
+@app.route('/removefromcart/<productid>')
+def remove_from_cart(productid):
+    if not is_logged_in():
+        return redirect('/')
+
+    customer_id = session['userid']
+    query = "DELETE FROM cart WHERE id =(SELECT MIN(id) FROM cart WHERE productid=? and userid = ?);"
+    con = create_connection(DB_NAME)
+    cur = con.cursor()
+    cur.execute(query, (productid, customer_id))
+    con.commit()
+    con.close()
+    return redirect('/cart')
+
+
+@app.route('/confirmorder')
+def confirm_order():
+    if not is_logged_in():
+        return redirect('/')
+
+    userid = session['userid']
+    con = create_connection(DB_NAME)
+    cur = con.cursor()
+    query = "DELETE FROM cart WHERE userid=?;"
+    cur.execute(query, (userid,))
+    con.commit()
+    con.close()
+    return redirect('/checkout')
+
+
+@app.route('/checkout')
+def checkout():
+    if not is_logged_in():
+        return redirect('/')
+    
+    return render_template('checkout.html')
 
 
 def is_logged_in():
